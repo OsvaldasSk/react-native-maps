@@ -239,6 +239,11 @@ public class AirMapManager extends ViewGroupManager<AirMapView> {
     }
   }
 
+  @ReactProp(name = "boundsToCheck")
+  public void setBoundsToCheck(AirMapView view, ReadableMap boundsToCheck) {
+    view.setBoundsToCheck(boundsToCheck);
+  }
+
   @Override
   public void receiveCommand(AirMapView view, int commandId, @Nullable ReadableArray args) {
     Integer duration;

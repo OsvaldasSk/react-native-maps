@@ -9,11 +9,13 @@ import com.google.android.gms.maps.model.LatLngBounds;
 
 public class RegionChangeEvent extends Event<RegionChangeEvent> {
   private final LatLngBounds bounds;
+  private final LatLngBounds boundsToCheck;
   private final boolean continuous;
 
-  public RegionChangeEvent(int id, LatLngBounds bounds, boolean continuous) {
+  public RegionChangeEvent(int id, LatLngBounds bounds, LatLngBounds boundsToCheck, boolean continuous) {
     super(id);
     this.bounds = bounds;
+    this.boundsToCheck = boundsToCheck;
     this.continuous = continuous;
   }
 
@@ -39,6 +41,10 @@ public class RegionChangeEvent extends Event<RegionChangeEvent> {
     region.putDouble("longitude", center.longitude);
     region.putDouble("latitudeDelta", bounds.northeast.latitude - bounds.southwest.latitude);
     region.putDouble("longitudeDelta", bounds.northeast.longitude - bounds.southwest.longitude);
+
+    if (boundsToCheck != null) {
+      region.putBoolean("boundsToCheckIncludesCenter", boundsToCheck.contains(center));
+    }
     event.putMap("region", region);
 
     rctEventEmitter.receiveEvent(getViewTag(), getEventName(), event);

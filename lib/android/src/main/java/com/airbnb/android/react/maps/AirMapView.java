@@ -76,6 +76,7 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
   private Integer loadingIndicatorColor = null;
   private final int baseMapPadding = 50;
 
+  private LatLngBounds boundsToCheck;
   private LatLngBounds boundsToMove;
   private boolean showUserLocation = false;
   private boolean handlePanDrag = false;
@@ -400,6 +401,19 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
     if (!initialRegionSet && initialRegion != null) {
       setRegion(initialRegion);
       initialRegionSet = true;
+    }
+  }
+
+  public void setBoundsToCheck(ReadableMap boundsToCheck) {
+    if (boundsToCheck != null) {
+      ReadableMap southwestMap = boundsToCheck.getMap("southwest");
+      LatLng southwest = new LatLng(southwestMap.getDouble("latitude"), southwestMap.getDouble("longitude"));
+
+      ReadableMap northeastMap = boundsToCheck.getMap("northeast");
+      LatLng northeast = new LatLng(northeastMap.getDouble("latitude"), northeastMap.getDouble("longitude"));;
+
+      this.boundsToCheck = new LatLngBounds(southwest, northeast);
+      )
     }
   }
 
