@@ -413,7 +413,6 @@ public class AirMapView extends MapView implements GoogleMap.InfoWindowAdapter,
       LatLng northeast = new LatLng(northeastMap.getDouble("latitude"), northeastMap.getDouble("longitude"));;
 
       this.boundsToCheck = new LatLngBounds(southwest, northeast);
-      )
     }
   }
 
