@@ -23,12 +23,14 @@
 #import <React/RCTBridge.h>
 #import "RCTConvert+AirMap.h"
 
-id regionAsJSON(MKCoordinateRegion region) {
+id regionAsJSON(MKCoordinateRegion region, GMSCoordinateBounds* boundsToCheck) {
+  BOOL boundsToCheckIncludesCenter = [boundsToCheck containsCoordinate:region.center];
   return @{
            @"latitude": [NSNumber numberWithDouble:region.center.latitude],
            @"longitude": [NSNumber numberWithDouble:region.center.longitude],
            @"latitudeDelta": [NSNumber numberWithDouble:region.span.latitudeDelta],
            @"longitudeDelta": [NSNumber numberWithDouble:region.span.longitudeDelta],
+           @"boundsToCheckIncludesCenter": [NSNumber numberWithBool:boundsToCheckIncludesCenter],
            };
 }
 
@@ -43,6 +45,7 @@ id regionAsJSON(MKCoordinateRegion region) {
   NSMutableArray<UIView *> *_reactSubviews;
   MKCoordinateRegion _initialRegion;
   MKCoordinateRegion _region;
+
   BOOL _initialRegionSetOnLoad;
   BOOL _didCallOnMapReady;
   BOOL _didMoveToWindow;
@@ -266,7 +269,7 @@ id regionAsJSON(MKCoordinateRegion region) {
 
 - (void)didChangeCameraPosition:(GMSCameraPosition *)position {
   id event = @{@"continuous": @YES,
-               @"region": regionAsJSON([AIRGoogleMap makeGMSCameraPositionFromMap:self andGMSCameraPosition:position]),
+               @"region": regionAsJSON([AIRGoogleMap makeGMSCameraPositionFromMap:self andGMSCameraPosition:position], _boundsToCheck),
                };
 
   if (self.onChange) self.onChange(event);
@@ -288,7 +291,7 @@ id regionAsJSON(MKCoordinateRegion region) {
 
 - (void)idleAtCameraPosition:(GMSCameraPosition *)position {
   id event = @{@"continuous": @NO,
-               @"region": regionAsJSON([AIRGoogleMap makeGMSCameraPositionFromMap:self andGMSCameraPosition:position]),
+               @"region": regionAsJSON([AIRGoogleMap makeGMSCameraPositionFromMap:self andGMSCameraPosition:position], _boundsToCheck),
                };
   if (self.onChange) self.onChange(event);  // complete
 }
@@ -472,6 +475,18 @@ id regionAsJSON(MKCoordinateRegion region) {
   }
 
   return marker.style.iconUrl;
+}
+
+- (void)setBoundsToCheck:(NSDictionary *)boundsToCheck {
+    NSDictionary *northeast = boundsToCheck[@"northeast"];
+    NSDictionary *southwest = boundsToCheck[@"southwest"];
+    double neLatitude = [[northeast objectForKey:@"latitude"] doubleValue];
+    double neLongitude = [[northeast objectForKey:@"longitude"] doubleValue];
+    double swLatitude = [[southwest objectForKey:@"latitude"] doubleValue];
+    double swLongitude = [[southwest objectForKey:@"longitude"] doubleValue];
+    CLLocationCoordinate2D a = CLLocationCoordinate2DMake(neLatitude, neLongitude);
+    CLLocationCoordinate2D b = CLLocationCoordinate2DMake(swLatitude, swLongitude);
+    _boundsToCheck = [[GMSCoordinateBounds alloc] initWithCoordinate:a coordinate:b];
 }
 
 - (NSString *)KmlSrc {
